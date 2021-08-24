@@ -217,14 +217,22 @@ extension ChatViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let msg = list[indexPath.row]
-        //Fix Me
         let type: CellType = msg.userId == AgoraRtm.current ? .right : .left
         let cell = tableView.dequeueReusableCell(withIdentifier: "MessageCell", for: indexPath) as! MessageCell
+        cell.update(type: type, message: msg)
+        return cell
     }
 }
 
 //MARK: - UITextFieldDelegate
 
 extension ChatViewController: UITextFieldDelegate {
-    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if pressedReturnToSendText(textField.text) {
+            textField.text = nil
+        } else {
+            view.endEditing(true)
+        }
+        return true
+    }
 }
