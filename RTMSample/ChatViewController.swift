@@ -8,25 +8,29 @@
 import UIKit
 import AgoraRtmKit
 
+//MARK: - Message
+
 struct Message {
     var userId: String
     var text: String
 }
 
+//MARK: - ChatViewController
+
 class ChatViewController: UIViewController, ShowAlertProtocol {
     
-    //MARK: Properties
+    //MARK: - Properties
     
     @IBOutlet weak var inputTextField: UITextField!
     @IBOutlet weak var inputViewBottom: NSLayoutConstraint!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var inputContainView: UIView!
     
-    var channelName: String?
+    var channelName: String = ""
     lazy var list = [Message]()
     var rtmChannel: AgoraRtmChannel?
     
-    //MARK: Lifecycle
+    //MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,6 +42,7 @@ class ChatViewController: UIViewController, ShowAlertProtocol {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.title = channelName
+        createChannel(channelName)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -48,7 +53,7 @@ class ChatViewController: UIViewController, ShowAlertProtocol {
         NotificationCenter.default.removeObserver(self)
     }
     
-    //MARK: Actions
+    //MARK:  - Actions
     
     @objc func keyboardFrameWillChange(notification: NSNotification) {
         guard let userInfo = notification.userInfo,
@@ -112,6 +117,12 @@ class ChatViewController: UIViewController, ShowAlertProtocol {
             print("DEBUG: Channel error \(error.rawValue)")
         })
     }
+    
+    private func pressedReturnToSendText(_ text: String?) -> Bool {
+        guard let text = text, text.count > 0 else { return false }
+        send(message: text)
+        return true
+    }
 }
 
 //MARK: - Send Message functions
@@ -134,6 +145,30 @@ extension ChatViewController {
         rtmChannel?.send(rtmMessage, completion: { error in
             sent(error.rawValue)
         })
+    }
+}
+
+//MARK: - Channel functions
+
+extension ChatViewController {
+    private func createChannel(_ channel: String) {
+        let errorHandle = { [weak self] (action: UIAlertAction) in
+            guard let strongSelf = self else { return }
+            strongSelf.navigationController?.popViewController(animated: true)
+        }
+        guard let rtmChannel = AgoraRtm.kit?.createChannel(withId: channel, delegate: self) else {
+            showAlert("DEBUG: Join channel fail", handler: errorHandle)
+            return
+        }
+        
+        rtmChannel.join { [weak self] (error) in
+            if error != .channelErrorOk, let strongSelf = self {
+                strongSelf.showAlert("DEBUG: Join channel error: \(error.rawValue)",
+                                     handler: errorHandle)
+            }
+        }
+        
+        self.rtmChannel = rtmChannel
     }
 }
 
@@ -171,4 +206,25 @@ extension ChatViewController: AgoraRtmChannelDelegate {
     func channel(_ channel: AgoraRtmChannel, messageReceived message: AgoraRtmMessage, from member: AgoraRtmMember) {
         appendMessage(user: member.userId, content: message.text)
     }
+}
+
+//MARK: - UITableViewDataSource
+
+extension ChatViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return list.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let msg = list[indexPath.row]
+        //Fix Me
+        let type: CellType = msg.userId == AgoraRtm.current ? .right : .left
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MessageCell", for: indexPath) as! MessageCell
+    }
+}
+
+//MARK: - UITextFieldDelegate
+
+extension ChatViewController: UITextFieldDelegate {
+    
 }

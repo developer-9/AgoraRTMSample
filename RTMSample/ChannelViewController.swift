@@ -32,11 +32,11 @@ extension ShowAlertProtocol {
 
 class ChannelViewController: UIViewController, ShowAlertProtocol {
     
-    //MARK: Properties
+    //MARK: - Properties
     
     @IBOutlet weak var channelTextField: UITextField!
     
-    //MARK: Lifecycle
+    //MARK: - Lifecycle
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -54,13 +54,13 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
         switch identifier {
         case "channelToChat":
             let chatVC = segue.destination as! ChatViewController
-        /// Fix Me
+            chatVC.channelName = channel
         default:
             break
         }
     }
     
-    //MARK: Actions
+    //MARK: - Actions
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         view.endEditing(true)
@@ -72,7 +72,7 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
         performSegue(withIdentifier: "channelToChat", sender: channel)
     }
     
-    //MARK: Helpers
+    //MARK: - Helpers
     
     private func login() {
         let account = AgoraRtm.current
