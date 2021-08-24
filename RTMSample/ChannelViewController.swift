@@ -92,8 +92,9 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
 //MARK: - AgoraRtmDelegate
 
 extension ChannelViewController: AgoraRtmDelegate {
+    //SDKとAgoraRTMシステム間のコネクションステータスが変わったときに発生する
     func rtmKit(_ kit: AgoraRtmKit, connectionStateChanged state: AgoraRtmConnectionState, reason: AgoraRtmConnectionChangeReason) {
-        showAlert("DEBUG: Connection statechanged \(state.rawValue)") { [weak self] (_) in
+        showAlert("connection state changed: \(state.rawValue)") { [weak self] (_) in
             if reason == .remoteLogin, let strongSelf = self {
                 strongSelf.navigationController?.popToRootViewController(animated: true)
             }

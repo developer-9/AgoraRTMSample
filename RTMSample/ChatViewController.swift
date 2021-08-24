@@ -34,11 +34,66 @@ class ChatViewController: UIViewController, ShowAlertProtocol {
         ifLoadOfflineMessages()
         AgoraRtm.updateKit(delegate: self)
     }
+    
+    //MARK: Actions
+    
+    @objc func keyboardFrameWillChange(notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+            let endKeyboardFrameValue = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
+            let durationValue = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber else {
+                return
+        }
+        
+        let endKeyboardFrame = endKeyboardFrameValue.cgRectValue
+        let duration = durationValue.doubleValue
+        
+        let isShowing: Bool = endKeyboardFrame.maxY > UIScreen.main.bounds.height ? false : true
+        
+        UIView.animate(withDuration: duration) { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            
+            if isShowing {
+                let offsetY = strongSelf.inputContainView.frame.maxY - endKeyboardFrame.minY
+                guard offsetY > 0 else {
+                    return
+                }
+                strongSelf.inputViewBottom.constant = -offsetY
+            } else {
+                strongSelf.inputViewBottom.constant = 0
+            }
+            strongSelf.view.layoutIfNeeded()
+        }
+    }
+
+    
+    //MARK: - Helpers
+    
+    private func appendMessage(user: String, content: String) {
+        DispatchQueue.main.async { [unowned self] in
+            
+            let msg = Message(userId: user, text: content)
+            self.list.append(msg)
+            if self.list.count > 100 {
+                self.list.removeFirst()
+            }
+            
+            let end = IndexPath(row: self.list.count - 1, section: 0)
+            self.tableView.reloadData()
+            self.tableView.scrollToRow(at: end, at: .bottom, animated: true)
+        }
+    }
+    
+    func addKeyboardObserver() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardFrameWillChange(notification:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+    }
 }
 
 //MARK: - AgoraRtmDelegate
 
 extension ChatViewController: AgoraRtmDelegate {
+    //SDKとAgoraRTMシステム間のコネクションステータスが変わったときに発生する
     func rtmKit(_ kit: AgoraRtmKit, connectionStateChanged state: AgoraRtmConnectionState, reason: AgoraRtmConnectionChangeReason) {
         showAlert("connection state changed: \(state.rawValue)") { [weak self] (_) in
             if reason == .remoteLogin, let strongSelf = self {
@@ -67,6 +122,6 @@ extension ChatViewController: AgoraRtmChannelDelegate {
     
     //チャンネル内でメッセージを受け取ったときに発生する
     func channel(_ channel: AgoraRtmChannel, messageReceived message: AgoraRtmMessage, from member: AgoraRtmMember) {
-        <#code#>
+        appendMessage(user: member.userId, content: message.text)
     }
 }
