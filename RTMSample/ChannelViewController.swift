@@ -49,14 +49,12 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard let identifier = segue.identifier, let channel = sender as? String else {
-            return
-        }
+        guard let identifier = segue.identifier, let channel = sender as? String else { return }
         
         switch identifier {
         case "channelToChat":
             let chatVC = segue.destination as! ChatViewController
-            chatVC.type = .group(channel)
+        /// Fix Me
         default:
             break
         }
@@ -69,10 +67,18 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
     }
     
     @IBAction func doJoinPressed(_ sender: UIButton) {
-        
+        guard let channel = channelTextField.text else { return }
+        performSegue(withIdentifier: "channelToChat", sender: channel)
     }
     
     //MARK: Helpers
+    
+    private func login() {
+        guard let account = AgoraRtm.current else { return }
+        AgoraRtm.kit?.login(byToken: nil, user: account, completion: { [unowned self] in
+            <#code#>
+        })
+    }
 }
 
 
