@@ -22,6 +22,7 @@ class ChatViewController: UIViewController, ShowAlertProtocol {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var inputContainView: UIView!
     
+    var channelName: String?
     lazy var list = [Message]()
     var trmChannel: AgoraRtmChannel?
     
@@ -31,8 +32,20 @@ class ChatViewController: UIViewController, ShowAlertProtocol {
         super.viewDidLoad()
         addKeyboardObserver()
         updateViews()
-        ifLoadOfflineMessages()
         AgoraRtm.updateKit(delegate: self)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.title = channelName
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        leaveChannel()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     //MARK: Actions
@@ -85,9 +98,16 @@ class ChatViewController: UIViewController, ShowAlertProtocol {
         }
     }
     
-    func addKeyboardObserver() {
+    private func addKeyboardObserver() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardFrameWillChange(notification:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
     }
+    
+    private func updateViews() {
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 55
+    }
+    
+    private func 
 }
 
 //MARK: - AgoraRtmDelegate
