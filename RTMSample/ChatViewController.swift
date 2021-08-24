@@ -24,7 +24,7 @@ class ChatViewController: UIViewController, ShowAlertProtocol {
     
     var channelName: String?
     lazy var list = [Message]()
-    var trmChannel: AgoraRtmChannel?
+    var rtmChannel: AgoraRtmChannel?
     
     //MARK: Lifecycle
     
@@ -107,7 +107,34 @@ class ChatViewController: UIViewController, ShowAlertProtocol {
         tableView.estimatedRowHeight = 55
     }
     
-    private func 
+    private func leaveChannel() {
+        rtmChannel?.leave(completion: { error in
+            print("DEBUG: Channel error \(error.rawValue)")
+        })
+    }
+}
+
+//MARK: - Send Message functions
+
+extension ChatViewController {
+    private func send(message: String) {
+        let sent = { [unowned self] (state: Int) in
+            guard state == 0 else {
+                self.showAlert("DEBUG: Message error \(state)") { _ in
+                    self.view.endEditing(true)
+                }
+                return
+            }
+            
+            let current = AgoraRtm.current
+            self.appendMessage(user: current, content: message)
+        }
+        
+        let rtmMessage = AgoraRtmMessage(text: message)
+        rtmChannel?.send(rtmMessage, completion: { error in
+            sent(error.rawValue)
+        })
+    }
 }
 
 //MARK: - AgoraRtmDelegate
