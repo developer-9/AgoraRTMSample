@@ -68,6 +68,7 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
     
     @IBAction func doJoinPressed(_ sender: UIButton) {
         guard let channel = channelTextField.text else { return }
+        login()
         performSegue(withIdentifier: "channelToChat", sender: channel)
     }
     
@@ -75,6 +76,7 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
     
     private func login() {
         let account = AgoraRtm.current
+        
         AgoraRtm.kit?.login(byToken: nil, user: account, completion: { [unowned self] (errorCode) in
             guard errorCode == .ok else {
                 self.showAlert("DEBUG: Login error: \(errorCode.rawValue)")
