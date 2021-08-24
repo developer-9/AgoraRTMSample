@@ -43,7 +43,7 @@
                     <navigationItem key="navigationItem" id="OCa-MP-FaG"/>
                     <connections>
                         <outlet property="channelTextField" destination="x99-Mi-NfA" id="tcs-wU-Qzs"/>
-                        <segue destination="bzA-AU-oDJ" kind="show" id="fKn-bE-9VN"/>
+                        <segue destination="bzA-AU-oDJ" kind="show" identifier="channelToChat" id="fKn-bE-9VN"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="0PA-Tl-7bh" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
