@@ -74,9 +74,14 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
     //MARK: Helpers
     
     private func login() {
-        guard let account = AgoraRtm.current else { return }
-        AgoraRtm.kit?.login(byToken: nil, user: account, completion: { [unowned self] in
-            <#code#>
+        let account = AgoraRtm.current
+        AgoraRtm.kit?.login(byToken: nil, user: account, completion: { [unowned self] (errorCode) in
+            guard errorCode == .ok else {
+                self.showAlert("DEBUG: Login error: \(errorCode.rawValue)")
+                return
+            }
+            
+            AgoraRtm.status = .offline
         })
     }
 }
@@ -86,7 +91,7 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
 
 extension ChannelViewController: AgoraRtmDelegate {
     func rtmKit(_ kit: AgoraRtmKit, connectionStateChanged state: AgoraRtmConnectionState, reason: AgoraRtmConnectionChangeReason) {
-        showAlert("Connection statechanged \(state.rawValue)") { [weak self] (_) in
+        showAlert("DEBUG: Connection statechanged \(state.rawValue)") { [weak self] (_) in
             if reason == .remoteLogin, let strongSelf = self {
                 strongSelf.navigationController?.popToRootViewController(animated: true)
             }

@@ -18,7 +18,7 @@ enum OneToOneMessageType {
 
 class AgoraRtm: NSObject {
     static let kit = AgoraRtmKit(appId: AppId.id, delegate: nil)
-    static var current = "7d07a242ab284583bcff2d04eb34767c"
+    static var current: String = "7d07a242ab284583bcff2d04eb34767c"
     static var status: LoginStatus = .offline
     static var oneToOneMessageType: OneToOneMessageType = .normal
     static var offlineMessages = [String: [AgoraRtmMessage]]()
