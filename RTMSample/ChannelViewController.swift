@@ -41,6 +41,7 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         AgoraRtm.updateKit(delegate: self)
+        logout()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -86,15 +87,23 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
             AgoraRtm.status = .offline
         })
     }
+    
+    private func logout() {
+        guard AgoraRtm.status == .online else { return }
+        AgoraRtm.kit?.logout(completion: { error in
+            guard error == .ok else { return }
+            AgoraRtm.status = .offline
+        })
+    }
 }
 
 
 //MARK: - AgoraRtmDelegate
 
 extension ChannelViewController: AgoraRtmDelegate {
-    //SDKとAgoraRTMシステム間のコネクションステータスが変わったときに発生する
+    ///SDKとAgoraRTMシステム間のコネクションステータスが変わったときに発生する
     func rtmKit(_ kit: AgoraRtmKit, connectionStateChanged state: AgoraRtmConnectionState, reason: AgoraRtmConnectionChangeReason) {
-        showAlert("connection state changed: \(state.rawValue)") { [weak self] (_) in
+        showAlert("DEBUG: Connection state changed: \(state.rawValue)") { [weak self] (_) in
             if reason == .remoteLogin, let strongSelf = self {
                 strongSelf.navigationController?.popToRootViewController(animated: true)
             }

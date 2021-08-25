@@ -27,20 +27,20 @@ class ChatViewController: UIViewController, ShowAlertProtocol {
     @IBOutlet weak var inputContainView: UIView!
     
     var channelName: String = ""
-    lazy var list = [Message]()
+    lazy var list = [Message]() {
+        didSet { print("DEBUG: message from \(list)")}
+    }
     var rtmChannel: AgoraRtmChannel?
     
     //MARK: - Lifecycle
     
     override func viewDidLoad() {
-        super.viewDidLoad()
         addKeyboardObserver()
         updateViews()
         AgoraRtm.updateKit(delegate: self)
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
         self.title = channelName
         createChannel(channelName)
     }
@@ -175,9 +175,9 @@ extension ChatViewController {
 //MARK: - AgoraRtmDelegate
 
 extension ChatViewController: AgoraRtmDelegate {
-    //SDKとAgoraRTMシステム間のコネクションステータスが変わったときに発生する
+    ///SDKとAgoraRTMシステム間のコネクションステータスが変わったときに発生する
     func rtmKit(_ kit: AgoraRtmKit, connectionStateChanged state: AgoraRtmConnectionState, reason: AgoraRtmConnectionChangeReason) {
-        showAlert("connection state changed: \(state.rawValue)") { [weak self] (_) in
+        showAlert("DEBUG: Connection state changed: \(state.rawValue)") { [weak self] (_) in
             if reason == .remoteLogin, let strongSelf = self {
                 strongSelf.navigationController?.popToRootViewController(animated: true)
             }
@@ -188,21 +188,21 @@ extension ChatViewController: AgoraRtmDelegate {
 //MARK: - AgoraRtmChannelDelegate
 
 extension ChatViewController: AgoraRtmChannelDelegate {
-    //チャンネルに誰かが参加した時に発生する
+    ///チャンネルに誰かが参加した時に発生する
     func channel(_ channel: AgoraRtmChannel, memberJoined member: AgoraRtmMember) {
         DispatchQueue.main.async { [unowned self] in
             self.showAlert("DEBUG: \(member.userId) join")
         }
     }
     
-    //誰かがチャンネルから退室した時に発生する
+    ///誰かがチャンネルから退室した時に発生する
     func channel(_ channel: AgoraRtmChannel, memberLeft member: AgoraRtmMember) {
         DispatchQueue.main.async { [unowned self] in
             self.showAlert("DEBUG: \(member.userId) left")
         }
     }
     
-    //チャンネル内でメッセージを受け取ったときに発生する
+    ///チャンネル内でメッセージを受け取ったときに発生する
     func channel(_ channel: AgoraRtmChannel, messageReceived message: AgoraRtmMessage, from member: AgoraRtmMember) {
         appendMessage(user: member.userId, content: message.text)
     }
