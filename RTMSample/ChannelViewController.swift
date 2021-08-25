@@ -84,7 +84,7 @@ class ChannelViewController: UIViewController, ShowAlertProtocol {
                 return
             }
             
-            AgoraRtm.status = .offline
+            AgoraRtm.status = .online
         })
     }
     
